@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="בנק ילדים">
+<title>בנק ילדים 🏦</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FFF8F0;
+  --card: #FFFFFF;
+  --shadow: rgba(0,0,0,0.08);
+  --text: #2D3436;
+  --text-light: #636E72;
+  --accent-1: #FF6B6B;
+  --accent-2: #4ECDC4;
+  --accent-3: #FFE66D;
+  --accent-4: #A29BFE;
+  --accent-5: #FD79A8;
+  --accent-6: #00B894;
+  --gradient-1: linear-gradient(135deg, #FF6B6B 0%, #FD79A8 100%);
+  --gradient-2: linear-gradient(135deg, #4ECDC4 0%, #00B894 100%);
+  --gradient-3: linear-gradient(135deg, #A29BFE 0%, #6C5CE7 100%);
+  --radius: 20px;
+  --radius-sm: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, .balance-amount, .btn {
+  font-family: 'Fredoka', sans-serif;
+}
+
+.screen { display: none; min-height: 100vh; padding: 20px; padding-bottom: 100px; animation: fadeIn 0.3s ease; }
+.screen.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes coinDrop { 0% { transform: translateY(-40px) rotate(0deg); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(0) rotate(360deg); opacity: 1; } }
+@keyframes growBar { from { width: 0; } }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+.home-header { text-align: center; padding: 40px 20px 30px; }
+.home-header h1 {
+  font-size: 42px;
+  background: linear-gradient(135deg, #FF6B6B, #A29BFE, #4ECDC4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.home-header p { font-size: 18px; color: var(--text-light); margin-top: 8px; }
+
+.kid-cards { display: flex; flex-direction: column; gap: 20px; max-width: 500px; margin: 0 auto; }
+
+.kid-card {
+  background: var(--card); border-radius: var(--radius); padding: 28px;
+  box-shadow: 0 8px 30px var(--shadow); cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative; overflow: hidden;
+}
+.kid-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; }
+.kid-card.child-0::before { background: var(--gradient-1); }
+.kid-card.child-1::before { background: var(--gradient-2); }
+.kid-card:active { transform: scale(0.97); }
+
+.kid-card-inner { display: flex; align-items: center; gap: 20px; }
+
+.kid-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px; flex-shrink: 0; animation: float 3s ease-in-out infinite;
+}
+.child-0 .kid-avatar { background: linear-gradient(135deg, #FFE0E0, #FFB8B8); }
+.child-1 .kid-avatar { background: linear-gradient(135deg, #D4F5F0, #A8E6CF); }
+
+.kid-info { flex: 1; }
+.kid-info h2 { font-size: 24px; margin-bottom: 4px; }
+.kid-balance-preview { font-family: 'Fredoka', sans-serif; font-size: 32px; font-weight: 700; }
+.child-0 .kid-balance-preview { color: var(--accent-1); }
+.child-1 .kid-balance-preview { color: var(--accent-2); }
+
+.kid-card .arrow { font-size: 24px; color: var(--text-light); transition: transform 0.3s; }
+.kid-card:hover .arrow { transform: translateX(-5px); }
+
+.parent-btn {
+  display: block; max-width: 500px; margin: 30px auto 0; width: 100%; padding: 18px;
+  border: 2px dashed #DDD; border-radius: var(--radius); background: transparent;
+  font-family: 'Fredoka', sans-serif; font-size: 18px; color: var(--text-light); cursor: pointer;
+  transition: all 0.3s;
+}
+.parent-btn:hover { border-color: var(--accent-4); color: var(--accent-4); }
+
+.dash-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+
+.back-btn {
+  width: 44px; height: 44px; border-radius: 50%; border: none;
+  background: var(--card); box-shadow: 0 4px 12px var(--shadow);
+  font-size: 20px; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; transition: transform 0.2s;
+}
+.back-btn:active { transform: scale(0.9); }
+.dash-header h1 { font-size: 28px; flex: 1; }
+
+.balance-card {
+  border-radius: var(--radius); padding: 32px; text-align: center;
+  color: white; margin-bottom: 24px; position: relative; overflow: hidden;
+}
+.balance-card.child-0 { background: var(--gradient-1); }
+.balance-card.child-1 { background: var(--gradient-2); }
+.balance-card::after {
+  content: '💰'; position: absolute; left: 20px; top: 20px;
+  font-size: 48px; opacity: 0.3; animation: float 4s ease-in-out infinite;
+}
+
+.balance-label { font-size: 16px; opacity: 0.9; margin-bottom: 8px; }
+.balance-amount { font-size: 52px; font-weight: 700; }
+.balance-interest {
+  margin-top: 12px; font-size: 14px; opacity: 0.85;
+  background: rgba(255,255,255,0.2); display: inline-block;
+  padding: 6px 16px; border-radius: 20px;
+}
+
+.jars { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.jar {
+  background: var(--card); border-radius: var(--radius); padding: 20px;
+  text-align: center; box-shadow: 0 4px 15px var(--shadow);
+}
+.jar-icon { font-size: 36px; margin-bottom: 8px; }
+.jar-label { font-size: 13px; color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.jar-amount { font-family: 'Fredoka', sans-serif; font-size: 28px; font-weight: 700; margin-top: 4px; }
+.jar.spend .jar-amount { color: var(--accent-5); }
+.jar.save .jar-amount { color: var(--accent-6); }
+
+.section-title { font-size: 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.goals-list { margin-bottom: 24px; }
+
+.goal-card {
+  background: var(--card); border-radius: var(--radius-sm); padding: 20px;
+  margin-bottom: 12px; box-shadow: 0 4px 15px var(--shadow);
+}
+.goal-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.goal-name { font-weight: 700; font-size: 16px; }
+.goal-amounts { font-size: 14px; color: var(--text-light); }
+
+.goal-bar-bg { height: 16px; background: #EEE; border-radius: 8px; overflow: hidden; }
+.goal-bar-fill {
+  height: 100%; border-radius: 8px;
+  transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: growBar 1s ease-out; position: relative;
+}
+.child-0 .goal-bar-fill { background: var(--gradient-1); }
+.child-1 .goal-bar-fill { background: var(--gradient-2); }
+.goal-bar-fill.complete { background: linear-gradient(135deg, #FFE66D, #FDCB6E) !important; }
+.goal-percent { font-size: 13px; font-weight: 700; color: var(--text-light); margin-top: 6px; text-align: left; }
+
+.tx-list { list-style: none; }
+.tx-item { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid #F0F0F0; }
+.tx-icon {
+  width: 42px; height: 42px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.tx-icon.credit { background: #E8F8F5; }
+.tx-icon.debit { background: #FDECEA; }
+.tx-details { flex: 1; }
+.tx-desc { font-weight: 600; font-size: 15px; }
+.tx-date { font-size: 13px; color: var(--text-light); }
+.tx-amount { font-family: 'Fredoka', sans-serif; font-size: 18px; font-weight: 600; }
+.tx-amount.credit { color: var(--accent-6); }
+.tx-amount.debit { color: var(--accent-1); }
+.tx-empty { text-align: center; padding: 30px; color: var(--text-light); font-size: 15px; }
+
+/* PIN */
+.pin-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; }
+.pin-title { font-size: 28px; margin-bottom: 8px; }
+.pin-subtitle { color: var(--text-light); margin-bottom: 30px; font-size: 16px; }
+.pin-dots { display: flex; gap: 16px; margin-bottom: 30px; }
+.pin-dot { width: 20px; height: 20px; border-radius: 50%; border: 3px solid #DDD; transition: all 0.2s; }
+.pin-dot.filled { background: var(--accent-4); border-color: var(--accent-4); transform: scale(1.2); }
+.pin-dot.wrong { background: var(--accent-1); border-color: var(--accent-1); animation: shake 0.4s; }
+
+.pin-pad { display: grid; grid-template-columns: repeat(3, 80px); gap: 12px; }
+.pin-key {
+  width: 80px; height: 80px; border-radius: 50%; border: none;
+  background: var(--card); box-shadow: 0 4px 12px var(--shadow);
+  font-family: 'Fredoka', sans-serif; font-size: 28px; cursor: pointer;
+  transition: all 0.15s; color: var(--text);
+}
+.pin-key:active { transform: scale(0.92); background: #f0f0f0; }
+.pin-key.empty { visibility: hidden; box-shadow: none; }
+.pin-key.del { font-size: 20px; }
+
+/* Parent controls */
+.parent-controls { max-width: 500px; margin: 0 auto; }
+.parent-section {
+  background: var(--card); border-radius: var(--radius); padding: 24px;
+  margin-bottom: 20px; box-shadow: 0 4px 15px var(--shadow);
+}
+.parent-section h3 { font-size: 18px; margin-bottom: 16px; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; color: var(--text-light); }
+.form-group select, .form-group input {
+  width: 100%; padding: 14px 16px; border: 2px solid #EEE;
+  border-radius: var(--radius-sm); font-family: 'Nunito', sans-serif;
+  font-size: 16px; transition: border-color 0.3s; background: white;
+}
+.form-group select:focus, .form-group input:focus { outline: none; border-color: var(--accent-4); }
+
+.btn {
+  padding: 14px 28px; border: none; border-radius: var(--radius-sm);
+  font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; width: 100%;
+}
+.btn:active { transform: scale(0.97); }
+.btn-add { background: var(--gradient-2); color: white; }
+.btn-remove { background: var(--gradient-1); color: white; }
+.btn-goal { background: var(--gradient-3); color: white; }
+.btn-settings { background: #EEE; color: var(--text); margin-top: 8px; }
+
+.interest-display {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px; background: #F8F8FF; border-radius: var(--radius-sm); margin-bottom: 12px;
+}
+.interest-display span { font-weight: 600; }
+.interest-rate { font-family: 'Fredoka', sans-serif; font-size: 22px; color: var(--accent-4); }
+
+.btn-row { display: flex; gap: 10px; }
+.btn-row .btn { flex: 1; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: #2D3436; color: white; padding: 14px 28px; border-radius: 30px;
+  font-weight: 600; font-size: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  z-index: 1000; animation: popIn 0.3s ease; display: none;
+}
+.toast.show { display: block; }
+
+/* Interest animation */
+.interest-anim {
+  position: fixed; inset: 0; display: none; align-items: center;
+  justify-content: center; background: rgba(0,0,0,0.5); z-index: 1001; flex-direction: column;
+}
+.interest-anim.show { display: flex; }
+.interest-anim-card {
+  background: white; border-radius: var(--radius); padding: 40px;
+  text-align: center; animation: popIn 0.5s ease; max-width: 350px;
+}
+.interest-anim-card .coin { font-size: 64px; animation: coinDrop 0.8s ease; }
+.interest-anim-card h2 { margin-top: 16px; font-size: 24px; color: var(--accent-6); }
+.interest-anim-card p { margin-top: 8px; color: var(--text-light); font-size: 15px; }
+.interest-anim-card .amount { font-family: 'Fredoka', sans-serif; font-size: 36px; color: var(--accent-6); margin-top: 12px; }
+
+/* Setup */
+.setup-form { max-width: 400px; margin: 0 auto; padding-top: 40px; }
+.setup-form h1 { text-align: center; font-size: 32px; margin-bottom: 8px; }
+.setup-form p { text-align: center; color: var(--text-light); margin-bottom: 30px; }
+.child-setup {
+  background: var(--card); border-radius: var(--radius); padding: 20px;
+  margin-bottom: 16px; box-shadow: 0 4px 15px var(--shadow);
+}
+.child-setup h3 { margin-bottom: 12px; }
+
+body::before {
+  content: ''; position: fixed; top: -100px; left: -100px;
+  width: 300px; height: 300px; border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,107,107,0.08), rgba(253,121,168,0.08)); z-index: -1;
+}
+body::after {
+  content: ''; position: fixed; bottom: -80px; right: -80px;
+  width: 250px; height: 250px; border-radius: 50%;
+  background: linear-gradient(135deg, rgba(78,205,196,0.08), rgba(0,184,148,0.08)); z-index: -1;
+}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setupScreen" class="screen">
+  <div class="setup-form">
+    <h1>🏦 בנק ילדים</h1>
+    <p>בואו נקים את הבנק המשפחתי!</p>
+    <div class="child-setup">
+      <h3>👧 ילד/ה 1</h3>
+      <div class="form-group">
+        <label>שם</label>
+        <input type="text" id="setupName1" placeholder="שם הילד/ה הראשון/ה">
+      </div>
+      <div class="form-group">
+        <label>אימוג׳י</label>
+        <input type="text" id="setupEmoji1" value="👧" maxlength="2">
+      </div>
+    </div>
+    <div class="child-setup">
+      <h3>👦 ילד/ה 2</h3>
+      <div class="form-group">
+        <label>שם</label>
+        <input type="text" id="setupName2" placeholder="שם הילד/ה השני/ה">
+      </div>
+      <div class="form-group">
+        <label>אימוג׳י</label>
+        <input type="text" id="setupEmoji2" value="👦" maxlength="2">
+      </div>
+    </div>
+    <div class="child-setup">
+      <h3>🔐 קוד הורה (4 ספרות)</h3>
+      <div class="form-group">
+        <input type="tel" id="setupPin" maxlength="4" placeholder="למשל 1234" pattern="[0-9]{4}">
+      </div>
+    </div>
+    <div class="child-setup">
+      <h3>📈 ריבית שבועית</h3>
+      <div class="form-group">
+        <label>אחוז ריבית בשבוע על קופת חיסכון</label>
+        <input type="number" id="setupInterest" value="5" min="0" max="50" step="1">
+      </div>
+    </div>
+    <button class="btn btn-add" onclick="completeSetup()">יאללה, מתחילים! 🚀</button>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="homeScreen" class="screen">
+  <div class="home-header">
+    <h1>בנק ילדים 🏦</h1>
+    <p>לחצו על השם שלכם כדי לראות את הכסף!</p>
+  </div>
+  <div class="kid-cards" id="kidCards"></div>
+  <button class="parent-btn" onclick="showPinScreen()">🔐 אזור הורים</button>
+</div>
+
+<!-- KID DASHBOARD -->
+<div id="kidDashScreen" class="screen">
+  <div class="dash-header">
+    <button class="back-btn" onclick="goHome()">→</button>
+    <h1 id="dashName"></h1>
+  </div>
+  <div id="dashContent"></div>
+</div>
+
+<!-- PIN -->
+<div id="pinScreen" class="screen">
+  <div class="pin-screen">
+    <button class="back-btn" style="position:absolute;top:20px;right:20px;" onclick="goHome()">→</button>
+    <h2 class="pin-title">🔐 אזור הורים</h2>
+    <p class="pin-subtitle">הכניסו את הקוד</p>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+    </div>
+    <div class="pin-pad" id="pinPad"></div>
+  </div>
+</div>
+
+<!-- PARENT PANEL -->
+<div id="parentScreen" class="screen">
+  <div class="dash-header">
+    <button class="back-btn" onclick="goHome()">→</button>
+    <h1>אזור הורים 🔐</h1>
+  </div>
+  <div class="parent-controls" id="parentControls"></div>
+</div>
+
+<!-- INTEREST ANIMATION -->
+<div class="interest-anim" id="interestAnim">
+  <div class="interest-anim-card">
+    <div class="coin">🪙</div>
+    <h2>יום ריבית!</h2>
+    <p id="interestAnimText">החיסכון שלך גדל!</p>
+    <div class="amount" id="interestAnimAmount"></div>
+    <button class="btn btn-add" style="margin-top:20px;" onclick="dismissInterest()">יש! 🎉</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'kidbank_data';
+
+function getDefaultData() {
+  return { children: [], pin: '1234', interestRate: 5, lastInterestDate: null, setupDone: false };
+}
+
+function loadData() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch(e) {}
+  return getDefaultData();
+}
+
+function saveData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+let APP = loadData();
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() { renderHome(); showScreen('homeScreen'); }
+
+function completeSetup() {
+  const name1 = document.getElementById('setupName1').value.trim();
+  const name2 = document.getElementById('setupName2').value.trim();
+  const emoji1 = document.getElementById('setupEmoji1').value.trim() || '👧';
+  const emoji2 = document.getElementById('setupEmoji2').value.trim() || '👦';
+  const pin = document.getElementById('setupPin').value.trim();
+  const interest = parseFloat(document.getElementById('setupInterest').value) || 5;
+
+  if (!name1 || !name2) { toast('נא להכניס את שמות שני הילדים!'); return; }
+  if (pin.length !== 4 || !/^\d{4}$/.test(pin)) { toast('הקוד חייב להיות 4 ספרות!'); return; }
+
+  APP.children = [
+    { name: name1, emoji: emoji1, balance: 0, spend: 0, save: 0, goals: [], transactions: [] },
+    { name: name2, emoji: emoji2, balance: 0, spend: 0, save: 0, goals: [], transactions: [] }
+  ];
+  APP.pin = pin;
+  APP.interestRate = interest;
+  APP.lastInterestDate = new Date().toISOString().split('T')[0];
+  APP.setupDone = true;
+  saveData(APP);
+  goHome();
+}
+
+function renderHome() {
+  document.getElementById('kidCards').innerHTML = APP.children.map((child, i) => `
+    <div class="kid-card child-${i}" onclick="openKidDash(${i})">
+      <div class="kid-card-inner">
+        <div class="kid-avatar">${child.emoji}</div>
+        <div class="kid-info">
+          <h2>${child.name}</h2>
+          <div class="kid-balance-preview">₪${child.balance.toFixed(2)}</div>
+        </div>
+        <div class="arrow">←</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openKidDash(index) {
+  checkAndApplyInterest();
+  const child = APP.children[index];
+  document.getElementById('dashName').textContent = `${child.emoji} ${child.name}`;
+
+  const goalsHtml = child.goals.map(g => {
+    const pct = Math.min(100, (child.save / g.amount) * 100);
+    return `
+      <div class="goal-card child-${index}">
+        <div class="goal-top">
+          <span class="goal-name">${g.emoji || '🎯'} ${g.name}</span>
+          <span class="goal-amounts">₪${child.save.toFixed(0)} / ₪${g.amount.toFixed(0)}</span>
+        </div>
+        <div class="goal-bar-bg">
+          <div class="goal-bar-fill ${pct >= 100 ? 'complete' : ''}" style="width:${pct}%"></div>
+        </div>
+        <div class="goal-percent">${pct >= 100 ? '🎉 הגעת ליעד!' : pct.toFixed(0) + '%'}</div>
+      </div>`;
+  }).join('');
+
+  const txHtml = child.transactions.slice(-15).reverse().map(tx => {
+    const isCredit = tx.amount >= 0;
+    return `
+      <div class="tx-item">
+        <div class="tx-icon ${isCredit ? 'credit' : 'debit'}">${isCredit ? '📥' : '📤'}</div>
+        <div class="tx-details">
+          <div class="tx-desc">${tx.desc}</div>
+          <div class="tx-date">${tx.date}</div>
+        </div>
+        <div class="tx-amount ${isCredit ? 'credit' : 'debit'}">${isCredit ? '+' : ''}₪${tx.amount.toFixed(2)}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('dashContent').innerHTML = `
+    <div class="balance-card child-${index}">
+      <div class="balance-label">סך הכל</div>
+      <div class="balance-amount">₪${child.balance.toFixed(2)}</div>
+      <div class="balance-interest">📈 ${APP.interestRate}% ריבית שבועית על חיסכון</div>
+    </div>
+    <div class="jars">
+      <div class="jar spend">
+        <div class="jar-icon">🛍️</div>
+        <div class="jar-label">הוצאות</div>
+        <div class="jar-amount">₪${child.spend.toFixed(2)}</div>
+      </div>
+      <div class="jar save">
+        <div class="jar-icon">🐷</div>
+        <div class="jar-label">חיסכון</div>
+        <div class="jar-amount">₪${child.save.toFixed(2)}</div>
+      </div>
+    </div>
+    ${child.goals.length ? `<div class="section-title">🎯 יעדי חיסכון</div><div class="goals-list">${goalsHtml}</div>` : ''}
+    <div class="section-title">📋 היסטוריה</div>
+    ${txHtml ? `<div class="tx-list">${txHtml}</div>` : '<div class="tx-empty">אין עדיין תנועות! בקשו מהורה להוסיף כסף 😊</div>'}
+  `;
+  document.getElementById('kidDashScreen').className = `screen active child-${index}`;
+  showScreen('kidDashScreen');
+}
+
+function checkAndApplyInterest() {
+  if (!APP.lastInterestDate) return;
+  const last = new Date(APP.lastInterestDate);
+  const now = new Date();
+  const daysDiff = Math.floor((now - last) / (1000 * 60 * 60 * 24));
+  const weeksPassed = Math.floor(daysDiff / 7);
+  if (weeksPassed < 1) return;
+
+  let totalAdded = 0;
+  APP.children.forEach(child => {
+    if (child.save > 0) {
+      let childInterest = 0;
+      for (let w = 0; w < weeksPassed; w++) {
+        const interest = child.save * (APP.interestRate / 100);
+        child.save += interest;
+        child.balance += interest;
+        childInterest += interest;
+      }
+      totalAdded += childInterest;
+      child.transactions.push({
+        desc: `📈 ריבית (${weeksPassed} ${weeksPassed === 1 ? 'שבוע' : 'שבועות'} × ${APP.interestRate}%)`,
+        amount: childInterest,
+        date: formatDate(now),
+        type: 'interest'
+      });
+    }
+  });
+
+  if (totalAdded > 0) {
+    const newDate = new Date(last);
+    newDate.setDate(newDate.getDate() + weeksPassed * 7);
+    APP.lastInterestDate = newDate.toISOString().split('T')[0];
+    saveData(APP);
+    document.getElementById('interestAnimAmount').textContent = `+₪${totalAdded.toFixed(2)}`;
+    document.getElementById('interestAnim').classList.add('show');
+  }
+}
+
+function dismissInterest() { document.getElementById('interestAnim').classList.remove('show'); }
+
+let pinBuffer = '';
+
+function showPinScreen() { pinBuffer = ''; renderPinDots(); renderPinPad(); showScreen('pinScreen'); }
+
+function renderPinDots() {
+  document.querySelectorAll('#pinDots .pin-dot').forEach((d, i) => {
+    d.className = 'pin-dot' + (i < pinBuffer.length ? ' filled' : '');
+  });
+}
+
+function renderPinPad() {
+  const keys = [1,2,3,4,5,6,7,8,9,'',0,'⌫'];
+  document.getElementById('pinPad').innerHTML = keys.map(k => {
+    if (k === '') return '<button class="pin-key empty"></button>';
+    if (k === '⌫') return `<button class="pin-key del" onclick="pinDel()">⌫</button>`;
+    return `<button class="pin-key" onclick="pinPress(${k})">${k}</button>`;
+  }).join('');
+}
+
+function pinPress(n) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += n;
+  renderPinDots();
+  if (pinBuffer.length === 4) {
+    setTimeout(() => {
+      if (pinBuffer === APP.pin) { openParentPanel(); }
+      else {
+        document.querySelectorAll('#pinDots .pin-dot').forEach(d => d.classList.add('wrong'));
+        setTimeout(() => { pinBuffer = ''; renderPinDots(); }, 600);
+      }
+    }, 200);
+  }
+}
+
+function pinDel() { pinBuffer = pinBuffer.slice(0, -1); renderPinDots(); }
+
+function openParentPanel() { renderParentPanel(); showScreen('parentScreen'); }
+
+function renderParentPanel() {
+  const childOptions = APP.children.map((c, i) => `<option value="${i}">${c.emoji} ${c.name}</option>`).join('');
+
+  document.getElementById('parentControls').innerHTML = `
+    <div class="parent-section">
+      <h3>💰 הוספה / הסרה של כסף</h3>
+      <div class="form-group">
+        <label>ילד/ה</label>
+        <select id="moneyChild">${childOptions}</select>
+      </div>
+      <div class="form-group">
+        <label>סכום (₪)</label>
+        <input type="number" id="moneyAmount" placeholder="0.00" min="0" step="0.5">
+      </div>
+      <div class="form-group">
+        <label>סיבה</label>
+        <input type="text" id="moneyReason" placeholder="למשל: מתנת יום הולדת, משימה...">
+      </div>
+      <div class="form-group">
+        <label>חלוקה (% לחיסכון)</label>
+        <input type="range" id="moneySplit" min="0" max="100" value="50" oninput="document.getElementById('splitLabel').textContent=this.value+'% חיסכון / '+(100-this.value)+'% הוצאות'">
+        <div id="splitLabel" style="text-align:center;font-size:14px;color:var(--text-light);margin-top:6px;">50% חיסכון / 50% הוצאות</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-add" onclick="addMoney()">הוספה ➕</button>
+        <button class="btn btn-remove" onclick="removeMoney()">הסרה ➖</button>
+      </div>
+    </div>
+
+    <div class="parent-section">
+      <h3>🎯 הוספת יעד חיסכון</h3>
+      <div class="form-group">
+        <label>ילד/ה</label>
+        <select id="goalChild">${childOptions}</select>
+      </div>
+      <div class="form-group">
+        <label>שם היעד</label>
+        <input type="text" id="goalName" placeholder="למשל: סט לגו">
+      </div>
+      <div class="form-group">
+        <label>סכום יעד (₪)</label>
+        <input type="number" id="goalAmount" placeholder="0" min="1">
+      </div>
+      <div class="form-group">
+        <label>אימוג׳י</label>
+        <input type="text" id="goalEmoji" value="🎮" maxlength="2">
+      </div>
+      <button class="btn btn-goal" onclick="addGoal()">הוספת יעד 🎯</button>
+    </div>
+
+    <div class="parent-section">
+      <h3>⚙️ הגדרות</h3>
+      <div class="interest-display">
+        <span>ריבית שבועית</span>
+        <span class="interest-rate">${APP.interestRate}%</span>
+      </div>
+      <div class="form-group">
+        <label>אחוז חדש (%)</label>
+        <input type="number" id="newInterestRate" value="${APP.interestRate}" min="0" max="50" step="1">
+      </div>
+      <button class="btn btn-settings" onclick="updateInterestRate()">עדכון ריבית</button>
+      <div class="form-group" style="margin-top:16px;">
+        <label>קוד חדש</label>
+        <input type="tel" id="newPin" maxlength="4" placeholder="4 ספרות" pattern="[0-9]{4}">
+      </div>
+      <button class="btn btn-settings" onclick="updatePin()">עדכון קוד</button>
+      <button class="btn btn-remove" style="margin-top:16px;" onclick="confirmReset()">איפוס כל המידע 🗑️</button>
+    </div>
+  `;
+}
+
+function addMoney() {
+  const ci = parseInt(document.getElementById('moneyChild').value);
+  const amount = parseFloat(document.getElementById('moneyAmount').value);
+  const reason = document.getElementById('moneyReason').value.trim() || 'הוספת כסף';
+  const savePct = parseInt(document.getElementById('moneySplit').value) / 100;
+  if (!amount || amount <= 0) { toast('נא להכניס סכום!'); return; }
+  const child = APP.children[ci];
+  child.balance += amount;
+  child.save += amount * savePct;
+  child.spend += amount * (1 - savePct);
+  child.transactions.push({ desc: reason, amount: amount, date: formatDate(new Date()), type: 'credit' });
+  saveData(APP);
+  toast(`נוספו ₪${amount.toFixed(2)} ל${child.name}!`);
+  document.getElementById('moneyAmount').value = '';
+  document.getElementById('moneyReason').value = '';
+}
+
+function removeMoney() {
+  const ci = parseInt(document.getElementById('moneyChild').value);
+  const amount = parseFloat(document.getElementById('moneyAmount').value);
+  const reason = document.getElementById('moneyReason').value.trim() || 'הסרת כסף';
+  if (!amount || amount <= 0) { toast('נא להכניס סכום!'); return; }
+  const child = APP.children[ci];
+  if (amount > child.balance) { toast('אין מספיק יתרה!'); return; }
+  let remaining = amount;
+  const fromSpend = Math.min(child.spend, remaining);
+  child.spend -= fromSpend;
+  remaining -= fromSpend;
+  child.save -= remaining;
+  child.balance -= amount;
+  child.transactions.push({ desc: reason, amount: -amount, date: formatDate(new Date()), type: 'debit' });
+  saveData(APP);
+  toast(`הוסרו ₪${amount.toFixed(2)} מ${child.name}`);
+  document.getElementById('moneyAmount').value = '';
+  document.getElementById('moneyReason').value = '';
+}
+
+function addGoal() {
+  const ci = parseInt(document.getElementById('goalChild').value);
+  const name = document.getElementById('goalName').value.trim();
+  const amount = parseFloat(document.getElementById('goalAmount').value);
+  const emoji = document.getElementById('goalEmoji').value.trim() || '🎯';
+  if (!name) { toast('נא להכניס שם יעד!'); return; }
+  if (!amount || amount <= 0) { toast('נא להכניס סכום יעד!'); return; }
+  APP.children[ci].goals.push({ name, amount, emoji });
+  saveData(APP);
+  toast(`היעד "${name}" נוסף ל${APP.children[ci].name}! 🎯`);
+  document.getElementById('goalName').value = '';
+  document.getElementById('goalAmount').value = '';
+}
+
+function updateInterestRate() {
+  const rate = parseFloat(document.getElementById('newInterestRate').value);
+  if (isNaN(rate) || rate < 0) { toast('נא להכניס אחוז תקין!'); return; }
+  APP.interestRate = rate;
+  saveData(APP);
+  renderParentPanel();
+  toast(`הריבית עודכנה ל-${rate}%!`);
+}
+
+function updatePin() {
+  const pin = document.getElementById('newPin').value.trim();
+  if (pin.length !== 4 || !/^\d{4}$/.test(pin)) { toast('הקוד חייב להיות 4 ספרות!'); return; }
+  APP.pin = pin;
+  saveData(APP);
+  toast('הקוד עודכן!');
+}
+
+function confirmReset() {
+  if (confirm('בטוחים שאתם רוצים למחוק את כל המידע? לא ניתן לשחזר!')) {
+    localStorage.removeItem(STORAGE_KEY);
+    APP = getDefaultData();
+    showScreen('setupScreen');
+    toast('כל המידע נמחק.');
+  }
+}
+
+function formatDate(date) {
+  const d = new Date(date);
+  return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+if (APP.setupDone) { goHome(); } else { showScreen('setupScreen'); }
+</script>
+</body>
+</html>
